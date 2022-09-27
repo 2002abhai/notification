@@ -19,6 +19,10 @@ class Application extends StatefulWidget {
 }
 
 class _Application extends State<Application> {
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  TextEditingController bodyController = TextEditingController();
+  TextEditingController titleController = TextEditingController();
 
   @override
   void initState() {
@@ -27,10 +31,8 @@ class _Application extends State<Application> {
   }
 
 
-  void sendNotification() async {
+  void sendNotification(String? title ,String? body) async {
     var token = await FirebaseMessaging.instance.getToken();
-    String? title = "hello";
-    String? body = "Notification";
 
     Future.delayed(
       const Duration(seconds: 10),
@@ -60,16 +62,61 @@ class _Application extends State<Application> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Cloud Messaging'),
         ),
         body: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              sendNotification();
-            },
-            child: const Text('send Notification'),
+          child: Form(
+            key: formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextFormField(
+                    controller: bodyController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text("body"),
+                    ),
+                    validator: (value){
+                      if(value!.isEmpty){
+                        return "Please enter body";
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 10,),
+                  TextFormField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text("title"),
+                    ),
+                    validator: (value){
+                      if(value!.isEmpty){
+                        return "Please enter title";
+                      }
+                      return null;
+                    },
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if(formKey.currentState!.validate()){
+                        sendNotification(
+                            titleController.text,
+                            bodyController.text
+                        );
+                      }
+
+                    },
+                    child: const Text('send Notification'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
